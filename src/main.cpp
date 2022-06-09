@@ -23,12 +23,12 @@ int main(void)
     glfwMakeContextCurrent(window);
 
 if(!gladLoadGL()){
-std::cout<<"Can't load GLAD!"<<std::cout;
+std::cout << "Can't load GLAD!"<<std::endl;
 return -1;
 }
 
-std::cout<<"OpenGl " << GLVersion.major<<"."<<GLVersion.minor
-<<std::endl;
+std::cout<<"OpenGl " << GLVersion.major<<"."<<GLVersion.minor<<std::endl;
+
 
 glClearColor(0, 1, 0, 1);
 
