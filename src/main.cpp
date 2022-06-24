@@ -1,14 +1,44 @@
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include"Renderer/ShaderProgram.h"
 
 
-#include <iostream>
+GLfloat point[] = {
+     0.0f,  0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f
+};
+GLfloat colors[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f
+};
+
+
+const char* vertex_shader =
+"#version 410\n"
+"layout(location = 0)in vec3 vertex_position;"
+"layout(location = 1)in vec3 vertex_color;"
+"out vec3 color;"
+"void main(){"
+"color = vertex_color;"
+"gl_Position = vec4(vertex_position,1.0);"
+"}";
+
+const char* fragment_shader =
+"#version 410\n"
+"in vec3 color;"
+"out vec4 frag_color;"
+"void main(){"
+"frag_color = vec4(color,1.0);"
+"}";
+
+
+
+
 namespace winSize {
-     int x = 640;
-     int y = 460;
+    int x = 640;
+    int y = 460;
 }
-void glfwWindowSizeCallback(GLFWwindow* pWindow,int width,int height) {
+void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height) {
     winSize::x = width;
     winSize::y = height;
     glViewport(0, 0, winSize::x, winSize::y);//этой командой где мы хотим рисовать
@@ -25,18 +55,18 @@ void glfwCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mo
 
 int main(void)
 {
-    
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//core profile это подмножество функцмй opengl куда не включены все функции по обратной своместимости различных версий opengl
     /* Initialize the library */
     if (!glfwInit()) {//вызываем функцию инициализации glwf
         std::cout << "glfwInit failed" << std::endl;
         return -1;
     }
-   // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);//указываю версию openGL
-   // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);//если у нас будет версия меньше 4 и 6, то мы просто не сможем создать окно
-    
-    /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* pWindow =  glfwCreateWindow(winSize::x, winSize::y, "Battle City", nullptr, nullptr);//Создание окна
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);//указываю версию openGL
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);//если у нас будет версия меньше 4 и 6, то мы просто не сможем создать окно
+
+     /* Create a windowed mode window and its OpenGL context */
+    GLFWwindow* pWindow = glfwCreateWindow(winSize::x, winSize::y, "Battle City", nullptr, nullptr);//Создание окна
     if (!pWindow)//если окно не было успешно создано, то выходим из программы
     {
         //выводим сообщение об ошибке
@@ -52,20 +82,61 @@ int main(void)
    //мы делаем контекст опенжл для текущего окна, окон у нас может быть несколько
    //и для каждого окна у нас может быть свой опен жл  контекст
    //поэтому мы должны указать текущее опенжл окно
-    glfwMakeContextCurrent(pWindow); 
-    
-//инициализируем библиотеку глад
-if(!gladLoadGL()){
-std::cout << "Can't load GLAD!"<<std::endl;
-return -1;
-}
+    glfwMakeContextCurrent(pWindow);
 
-std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;//показывает какая установленна видео карта
-std::cout << "OpenGL version: "<< glGetString(GL_VERSION) << std::endl;//показывает какая установленная версия opengl
+    //инициализируем библиотеку глад
+    if (!gladLoadGL()) {
+        std::cout << "Can't load GLAD!" << std::endl;
+        return -1;
+    }
+
+    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;//показывает какая установленна видео карта
+    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;//показывает какая установленная версия opengl
 
 
 
-glClearColor(1, 1, 0, 1);
+    glClearColor(1, 1, 0, 1);
+
+    string vertexShader(vertex_shader);
+    string fragmentShader(fragment_shader);
+    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
+    if (!shaderProgram.isCompiled()) {
+        cerr << "Can't create shader program!\n";
+        return -1;
+    }
+    GLuint points_vbo = 0;
+    glGenBuffers(1, &points_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
+
+    GLuint colors_vbo = 0;
+    glGenBuffers(1, &colors_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+    GLuint vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+
+
+
+
+
+
+
+
+
+
+
 
     /* Loop until the user closes the window */
 //окно отрисовки, будет открыто пока не будет закрыто
@@ -76,6 +147,13 @@ glClearColor(1, 1, 0, 1);
         //видео карта задний буфер
         //монитор это передний буфер
         /* Swap front and back buffers */
+        shaderProgram.use();
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        
+        
+        
+        
         glfwSwapBuffers(pWindow);
 
         /* Poll for and process events */
