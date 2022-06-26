@@ -47,24 +47,7 @@ namespace Renderer {
 		}
 		return true;
 }
-	/*bool ShaderProgram::createShader(const std::string& source, const GLenum shaderType, GLuint& shaderID)
-	{
-		shaderID = glCreateShader(shaderType);
-		const char* code = source.c_str();
-		glShaderSource(shaderID, 1, &code, nullptr);
-		glCompileShader(shaderID);
-
-		GLint success;
-		glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
-		if (!success)
-		{
-			GLchar infoLog[1024];
-			glGetProgramInfoLog(shaderID, 1024, nullptr, infoLog);
-			std::cerr << "ERROR::SHADER: Compile-time error:\n" << infoLog << std::endl;
-			return false;
-		}
-		return true;
-	}*/
+	
 	ShaderProgram::~ShaderProgram() {
 		glDeleteProgram(m_ID);
 	}

@@ -1,5 +1,5 @@
 #include"Renderer/ShaderProgram.h"
-
+#include"Resources/ResourceManager.h"
 
 GLfloat point[] = {
      0.0f,  0.5f, 0.0f,
@@ -13,23 +13,6 @@ GLfloat colors[] = {
 };
 
 
-const char* vertex_shader =
-"#version 410\n"
-"layout(location = 0)in vec3 vertex_position;"
-"layout(location = 1)in vec3 vertex_color;"
-"out vec3 color;"
-"void main(){"
-"color = vertex_color;"
-"gl_Position = vec4(vertex_position,1.0);"
-"}";
-
-const char* fragment_shader =
-"#version 410\n"
-"in vec3 color;"
-"out vec4 frag_color;"
-"void main(){"
-"frag_color = vec4(color,1.0);"
-"}";
 
 
 
@@ -53,9 +36,9 @@ void glfwCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mo
 
 
 
-int main(void)
+int main(int argc,char** argv)
 {
-
+    
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//core profile это подмножество функцмй opengl куда не включены все функции по обратной своместимости различных версий opengl
     /* Initialize the library */
     if (!glfwInit()) {//вызываем функцию инициализации glwf
@@ -97,69 +80,72 @@ int main(void)
 
     glClearColor(1, 1, 0, 1);
 
-    string vertexShader(vertex_shader);
-    string fragmentShader(fragment_shader);
-    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
-    if (!shaderProgram.isCompiled()) {
-        cerr << "Can't create shader program!\n";
-        return -1;
-    }
-    GLuint points_vbo = 0;
-    glGenBuffers(1, &points_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
-
-    GLuint colors_vbo = 0;
-    glGenBuffers(1, &colors_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /* Loop until the user closes the window */
-//окно отрисовки, будет открыто пока не будет закрыто
-    while (!glfwWindowShouldClose(pWindow))
+    
     {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);//будет заливаться буффер цвета
-        //видео карта задний буфер
-        //монитор это передний буфер
-        /* Swap front and back buffers */
-        shaderProgram.use();
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        
-        
-        
-        
-        glfwSwapBuffers(pWindow);
+        ResourceManager resourceManager(*argv);
+        auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
+        if (!pDefaultShaderProgram) {
+            cerr << "Can't create shader program: " << "DefaultShader " << endl;
+            return -1;
+        }
+       
+        GLuint points_vbo = 0;
+        glGenBuffers(1, &points_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
 
-        /* Poll for and process events */
-        glfwPollEvents();//этой командой glfw обрабатывает все команды из вне,
-        //такие как нажатие клавишы , изменение позиции курсора, изменение размеров окна,
-        //закрытие окна , ну и соответствующим образом проерокировать
+        GLuint colors_vbo = 0;
+        glGenBuffers(1, &colors_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+        GLuint vao = 0;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* Loop until the user closes the window */
+    //окно отрисовки, будет открыто пока не будет закрыто
+        while (!glfwWindowShouldClose(pWindow))
+        {
+            /* Render here */
+            glClear(GL_COLOR_BUFFER_BIT);//будет заливаться буффер цвета
+            //видео карта задний буфер
+            //монитор это передний буфер
+            /* Swap front and back buffers */
+            pDefaultShaderProgram->use();
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+
+
+            glfwSwapBuffers(pWindow);
+
+            /* Poll for and process events */
+            glfwPollEvents();//этой командой glfw обрабатывает все команды из вне,
+            //такие как нажатие клавишы , изменение позиции курсора, изменение размеров окна,
+            //закрытие окна , ну и соответствующим образом проерокировать
+        }
     }
 
     glfwTerminate();
