@@ -82,12 +82,14 @@ int main(int argc,char** argv)
 
     
     {
-        ResourceManager resourceManager(*argv);
+        ResourceManager resourceManager(argv[0]);
         auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
         if (!pDefaultShaderProgram) {
             cerr << "Can't create shader program: " << "DefaultShader " << endl;
             return -1;
         }
+
+        resourceManager.loadTexture("DefaultTexture", "res/textures/map_16x16.png");
        
         GLuint points_vbo = 0;
         glGenBuffers(1, &points_vbo);
