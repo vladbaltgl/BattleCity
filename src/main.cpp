@@ -1,6 +1,7 @@
 #include"Renderer/ShaderProgram.h"
 #include"Resources/ResourceManager.h"
 #include"Renderer/Texture2D.h"
+#include<glm/vec2.hpp>
 GLfloat point[] = {
      0.0f,  0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
@@ -22,19 +23,13 @@ GLfloat texCoord[] = {
 
 
 
+glm::ivec2 g_windowSize(640, 460);
 
 
-
-
-
-namespace winSize {
-    int x = 640;
-    int y = 460;
-}
 void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height) {
-    winSize::x = width;
-    winSize::y = height;
-    glViewport(0, 0, winSize::x, winSize::y);//этой командой где мы хотим рисовать
+    g_windowSize.x = width;
+    g_windowSize.y = height;
+    glViewport(0, 0, g_windowSize.x, g_windowSize.y);//этой командой где мы хотим рисовать
 //0,0 это угол
 }
 
@@ -59,7 +54,7 @@ int main(int argc,char** argv)
     // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);//если у нас будет версия меньше 4 и 6, то мы просто не сможем создать окно
 
      /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* pWindow = glfwCreateWindow(winSize::x, winSize::y, "Battle City", nullptr, nullptr);//Создание окна
+    GLFWwindow* pWindow = glfwCreateWindow(g_windowSize.x, g_windowSize.y, "Battle City", nullptr, nullptr);//Создание окна
     if (!pWindow)//если окно не было успешно создано, то выходим из программы
     {
         //выводим сообщение об ошибке
@@ -152,9 +147,7 @@ int main(int argc,char** argv)
         {
             /* Render here */
             glClear(GL_COLOR_BUFFER_BIT);//будет заливаться буффер цвета
-            //видео карта задний буфер
-            //монитор это передний буфер
-            /* Swap front and back buffers */
+           
             pDefaultShaderProgram->use();
             glBindVertexArray(vao);
             tex->bind();
