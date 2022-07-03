@@ -14,23 +14,23 @@ namespace Renderer {
 			return;
 		}
 		m_ID = glCreateProgram();
-		    glAttachShader(m_ID, vertexShaderID);
-			glAttachShader(m_ID, fragmentShaderID);
-			glLinkProgram(m_ID);
-			GLint success;
-			glGetProgramiv(m_ID,GL_LINK_STATUS,&success);
-			if (!success) {
-				GLchar infolog[1024];
-				glGetProgramInfoLog(m_ID, 1024, nullptr, infolog);
-				cerr << "Error!Shader::LinkTime-error\n" << infolog << endl;
-			}
-			else {
-				m_isCompiled = true;
-			}
-			glDeleteShader(vertexShaderID);
-			glDeleteShader(fragmentShaderID);
+		glAttachShader(m_ID, vertexShaderID);
+		glAttachShader(m_ID, fragmentShaderID);
+		glLinkProgram(m_ID);
+		GLint success;
+		glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+		if (!success) {
+			GLchar infolog[1024];
+			glGetProgramInfoLog(m_ID, 1024, nullptr, infolog);
+			cerr << "Error!Shader::LinkTime-error\n" << infolog << endl;
+		}
+		else {
+			m_isCompiled = true;
+		}
+		glDeleteShader(vertexShaderID);
+		glDeleteShader(fragmentShaderID);
 	}
-	bool ShaderProgram::createShader(const string& source, const GLenum shaderType	, GLuint& shaderID) {
+	bool ShaderProgram::createShader(const string& source, const GLenum shaderType, GLuint& shaderID) {
 		shaderID = glCreateShader(shaderType);
 		const char* code = source.c_str();
 		glShaderSource(shaderID, 1, &code, nullptr);
@@ -38,16 +38,16 @@ namespace Renderer {
 
 		GLint success;
 
-		glGetShaderiv(shaderID,GL_COMPILE_STATUS,&success);
+		glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
 		if (!success) {
 			GLchar infolog[1024];
 			glGetProgramInfoLog(shaderID, 1024, nullptr, infolog);
-			cerr << "Error!Shader::CompileTime-error\n" <<infolog<< endl;
+			cerr << "Error!Shader::CompileTime-error\n" << infolog << endl;
 			return false;
 		}
 		return true;
-}
-	
+	}
+
 	ShaderProgram::~ShaderProgram() {
 		glDeleteProgram(m_ID);
 	}
@@ -67,7 +67,9 @@ namespace Renderer {
 		m_isCompiled = shaderProgram.m_isCompiled;
 		shaderProgram.m_ID = 0;
 		shaderProgram.m_isCompiled = false;
-		 }
-
+	}
+	void ShaderProgram::setInt(const string& name, const GLint value) {
+		glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
+	}
 
 }
